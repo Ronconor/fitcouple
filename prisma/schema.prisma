@@ -16,6 +16,7 @@ model User {
   lockedUntil    DateTime?
   profile        UserProfile?
   workoutPlan    WorkoutPlan?
+  workoutSessions WorkoutSession[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -72,7 +73,8 @@ model WorkoutDay {
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
-  exercises     WorkoutDayExercise[]
+  exercises       WorkoutDayExercise[]
+  workoutSessions WorkoutSession[]
 
   @@unique([planId, dayOfWeek])
 }
@@ -92,7 +94,46 @@ model WorkoutDayExercise {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
+  workoutSets  WorkoutSet[]
+
   @@unique([workoutDayId, order])
+}
+
+model WorkoutSession {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutDayId String
+  workoutDay   WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt    DateTime      @default(now())
+  completedAt  DateTime?
+  status       String        @default("IN_PROGRESS") // "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+  notes        String?       // Sensaciones generales, comentarios
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  sets         WorkoutSet[]
+
+  @@index([userId, startedAt])
+  @@index([workoutDayId])
+}
+
+model WorkoutSet {
+  id                   String             @id @default(cuid())
+  workoutSessionId     String
+  workoutSession       WorkoutSession     @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  workoutDayExerciseId String
+  workoutDayExercise   WorkoutDayExercise @relation(fields: [workoutDayExerciseId], references: [id], onDelete: Cascade)
+  setNumber            Int                // 1, 2, 3...
+  repsCompleted        Int?
+  weightKg             Float?             // Almacenado siempre en kg
+  durationSeconds      Int?               // Para ejercicios por tiempo
+  completedAt          DateTime           @default(now())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([workoutSessionId])
+  @@index([workoutDayExerciseId])
 }
 
 model SystemHealth {
@@ -100,3 +141,4 @@ model SystemHealth {
   status    String   @default("healthy")
   checkedAt DateTime @default(now())
 }
+

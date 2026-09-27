@@ -53,9 +53,20 @@ export async function getUserDayWorkout(userId: string, dayOfWeek: number) {
   };
 }
 
-export function getCurrentDayOfWeek(): number {
-  // JavaScript getDay(): 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+export function getCurrentDayOfWeek(timeZone: string = "America/Bogota"): number {
   // En nuestro esquema: 1 = Lunes, 2 = Martes, ..., 6 = Sábado, 7 = Domingo
-  const jsDay = new Date().getDay();
-  return jsDay === 0 ? 7 : jsDay;
+  // Usamos Intl.DateTimeFormat para calcular el día en la zona horaria local (-05:00 Colombia)
+  const now = new Date();
+  const dayShort = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "short" }).format(now);
+  const dayMap: Record<string, number> = {
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+    Sun: 7,
+  };
+  return dayMap[dayShort] ?? (now.getDay() === 0 ? 7 : now.getDay());
 }
+

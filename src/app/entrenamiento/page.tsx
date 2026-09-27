@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { getUserDayWorkout, getCurrentDayOfWeek } from "@/lib/workouts";
+import { getActiveWorkoutSession } from "@/lib/sessions";
 import { ExerciseCard } from "@/components/workouts/ExerciseCard";
+import { StartWorkoutButton } from "@/components/workouts/StartWorkoutButton";
 import {
   ArrowLeft,
   Calendar,
@@ -11,6 +13,7 @@ import {
   Sparkles,
   Info,
   CalendarDays,
+  History,
 } from "lucide-react";
 
 export const metadata = {
@@ -37,6 +40,9 @@ export default async function EntrenamientoPage({
   const selectedDay = isNaN(parsedDay) || parsedDay < 1 || parsedDay > 7 ? currentDay : parsedDay;
 
   const workoutData = await getUserDayWorkout(user.id, selectedDay);
+  const day = workoutData?.day;
+
+  const activeSession = day ? await getActiveWorkoutSession(user.id, day.id) : null;
 
   const daysNav = [
     { dayOfWeek: 1, label: "L", name: "Lunes" },
@@ -49,7 +55,6 @@ export default async function EntrenamientoPage({
   ];
 
   const isHim = user.slug === "el";
-  const day = workoutData?.day;
   const isToday = selectedDay === currentDay;
 
   return (
@@ -65,13 +70,23 @@ export default async function EntrenamientoPage({
             <span>Mi espacio</span>
           </Link>
 
-          <Link
-            href="/semana"
-            className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
-          >
-            <CalendarDays className="w-3.5 h-3.5" />
-            <span>Ver mi semana completa</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/historial"
+              className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              <History className="w-3.5 h-3.5" />
+              <span>Historial</span>
+            </Link>
+
+            <Link
+              href="/semana"
+              className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>Semana</span>
+            </Link>
+          </div>
         </div>
 
         {/* Selector Horizontal de los 7 Días */}
@@ -157,6 +172,17 @@ export default async function EntrenamientoPage({
               )}
             </div>
           </header>
+        )}
+
+        {/* Botón de Empezar / Continuar Entrenamiento */}
+        {day && !day.isRestDay && (
+          <section className="pt-0.5">
+            <StartWorkoutButton
+              workoutDayId={day.id}
+              hasActiveSession={!!activeSession}
+              activeSessionId={activeSession?.id}
+            />
+          </section>
         )}
 
         {/* Contenido: Si es día de descanso o lista de ejercicios */}

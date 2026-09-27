@@ -50,23 +50,24 @@ FC-6 [Visualización Progreso] ➔ FC-7 [Hardening & Lanzamiento MVP]
 - **FC-0 — Auditoría de Entorno & Repositorio (COMPLETADA):**  
   Verificación en modo solo lectura de herramientas, puertos, Docker y remoto.
 
-- **FC-1 — Git & Identidad del Proyecto (FASE ACTUAL):**  
-  Inicialización limpia de Git con rama `main`, `.gitignore`, `README.md`, alcance funcional y sincronización remota con `origin`.
+- **FC-1 & FC-1.1 — Git & Identidad del Proyecto (COMPLETADA):**  
+  Inicialización limpia de Git con rama `main`, `.gitignore`, `README.md`, alcance funcional e identidad aislada `Ronconor <f.roncallo@gmail.com>`.
 
-- **FC-2 — Infraestructura Docker Aislada:**  
-  Configuración de contenedor PostgreSQL (`fitcouple-db`) en puerto `5438` (evitando conflictos con otros servicios existentes), volumen persistente `fitcouple_pgdata` y red dedicada `fitcouple_network`.
+- **FC-2 — Infraestructura Docker Aislada (COMPLETADA):**  
+  Contenedor PostgreSQL 16 (`fitcouple-db-1`) en puerto `5438`, volumen persistente `fitcouple_postgres_data` y healthcheck.
 
-- **FC-3 — Núcleo Frontend Next.js (Mobile-First / PWA):**  
-  Estructura base en Next.js con TypeScript, Tailwind CSS, configuración de puerto de desarrollo `3005`, manifest de PWA para instalación móvil y navegación táctil optimizada.
+- **FC-3 — Núcleo Frontend Next.js Mobile-First (COMPLETADA):**  
+  Estructura base en Next.js 15, React 19, TypeScript, Tailwind CSS, Prisma 6 y conexión a PostgreSQL.
 
-- **FC-4 — Modelado de Datos y Rutinas Iniciales (Prisma):**  
-  Modelado en base de datos de usuarios, restricciones de ejercicios (filtro rodilla, control intensidad), catálogo de ejercicios compatibles con el kit de mancuernas y plantillas de rutinas iniciales personalizadas.
+- **FC-4 — Acceso Privado y Dos Perfiles Individuales (COMPLETADA):**  
+  Autenticación robusta con bcrypt, tokens HMAC-SHA256, cookies HttpOnly, protección contra fuerza bruta y aislamiento estricto de perfiles.
 
-- **FC-5 — Flujo de Entrenamiento y Registro Rápido (MVP Funcional):**  
-  Pantalla interactiva de entrenamiento activo: selección de ejercicio, guía técnica rápida, calculadora de discos de mancuernas e ingreso ágil de peso/repeticiones.
+- **FC-5 — Planes Semanales Personalizados y Catálogo (COMPLETADA):**  
+  Catálogo de 21 ejercicios adaptados para casa, planes de 7 días para Él (control cardiovascular) y Ella (cero impacto, cero saltos, sentadilla en rango protegido).
 
-- **FC-6 — Módulo de Progreso Corporal:**  
+- **FC-6 — Registro de Entrenamientos e Historial (COMPLETADA):**  
+  Sesión activa de entrenamiento ("Empezar entrenamiento"), registro ágil de series, repeticiones y cargas (kg/lb con conversión limpia), temporizador de descanso, finalización de sesión con notas e historial individual expandible con aislamiento total.
+
+- **FC-7 — Módulo de Progreso Corporal y Métricas (SIGUIENTE FASE):**  
   Registro periódico de peso y medidas corporales, con gráficas simples de evolución para cada usuario.
 
-- **FC-7 — Pulido, Seguridad y Lanzamiento Local:**  
-  Verificación de respaldos de base de datos, pruebas en dispositivos móviles en la red local y entrega del MVP listo para uso diario.

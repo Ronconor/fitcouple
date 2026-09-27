@@ -20,6 +20,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/perfil") ||
     pathname.startsWith("/entrenamiento") ||
     pathname.startsWith("/semana") ||
+    pathname.startsWith("/historial") ||
     pathname.startsWith("/api/user");
 
   // Si intenta entrar a una ruta protegida sin estar autenticado -> redirigir a /login
@@ -43,6 +44,7 @@ export const config = {
     "/perfil/:path*",
     "/entrenamiento/:path*",
     "/semana/:path*",
+    "/historial/:path*",
     "/api/user/:path*",
     "/login",
   ],

@@ -180,15 +180,15 @@ const exercisesData = [
   // --- PIERNAS CON RANGO ADAPTADO (NO SENTADILLA PROFUNDA) ---
   {
     slug: "box-squat-sentadilla-a-caja-silla",
-    name: "Sentadilla a Silla (Rango Parcial a 90°)",
+    name: "Sentadilla a Silla (Rango Cómodo y Protegido)",
     muscleGroup: "Cuádriceps y Glúteos",
     equipment: "Silla firme / Sofá + Peso corporal o Mancuernas ligeras",
     instructions:
-      "1. Colócate de pie frente a una silla firme, con los pies al ancho de hombros y puntas ligeramente hacia afuera.\n2. Empuja las caderas hacia atrás y flexiona las rodillas de forma controlada hasta rozar suavemente el asiento de la silla (90°).\n3. Sin relajarte sobre la silla, empuja con los talones y extiende las piernas para levantarte.\n4. ¡Importante: NO bajar más allá de la silla (evitar sentadilla profunda)!",
+      "1. Colócate de pie frente a una silla o asiento firme, con los pies al ancho de hombros y puntas ligeramente hacia afuera.\n2. Empuja las caderas hacia atrás y flexiona las rodillas de forma controlada hasta rozar suavemente el asiento de la silla, siempre en un rango cómodo y sin dolor.\n3. Sin relajarte sobre la silla, empuja con los talones y extiende las piernas para levantarte.\n4. ¡Importante: NO forzar la flexión articular ni buscar profundidad que cause incomodidad!",
     commonMistakes: "Desplomarse en la silla sin control o dejar que las rodillas colapsen hacia adentro.",
     alternative: "Prensa de piernas isométrica suave contra la pared.",
     safetyWarning:
-      "Restricción estricta de rodilla derecha: el asiento actúa como tope de seguridad garantizando que nunca se sobrepase el ángulo seguro de 90°.",
+      "Protección de rodilla: la silla sirve como guía y tope de seguridad. Trabaja únicamente en un rango de movimiento completamente cómodo e indoloro.",
   },
   {
     slug: "zancada-estatica-corta-apoyada",

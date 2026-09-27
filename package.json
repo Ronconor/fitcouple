@@ -14,7 +14,9 @@
     "setup:users": "tsx scripts/setup-credentials.ts",
     "seed:workouts": "tsx prisma/seed-workouts.ts",
     "test:auth": "tsx tests/auth-isolation.test.ts",
-    "test:workouts": "tsx tests/workouts.test.ts"
+    "test:workouts": "tsx tests/workouts.test.ts",
+    "test:sessions": "tsx tests/sessions.test.ts",
+    "test": "tsx tests/auth-isolation.test.ts && tsx tests/workouts.test.ts && tsx tests/sessions.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

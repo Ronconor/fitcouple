@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { logoutAction } from "@/app/actions/auth";
 import { getUserDayWorkout, getCurrentDayOfWeek } from "@/lib/workouts";
+import { getActiveWorkoutSession } from "@/lib/sessions";
 import {
   Dumbbell,
   TrendingUp,
@@ -15,6 +16,8 @@ import {
   ArrowRight,
   Coffee,
   CheckCircle2,
+  History,
+  PlayCircle,
 } from "lucide-react";
 
 export const metadata = {
@@ -31,6 +34,7 @@ export default async function DashboardPage() {
   const currentDay = getCurrentDayOfWeek();
   const workoutData = await getUserDayWorkout(user.id, currentDay);
   const todayWorkout = workoutData?.day;
+  const activeSession = await getActiveWorkoutSession(user.id);
 
   const isHim = user.slug === "el";
   const displayName = user.profile?.displayName || user.name;
@@ -121,6 +125,38 @@ export default async function DashboardPage() {
           </div>
         </section>
 
+        {/* ALERTA DE SESIÓN EN CURSO (SI EXISTE) */}
+        {activeSession && (
+          <section className="bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 border border-emerald-500/60 rounded-3xl p-4.5 space-y-3 shadow-lg shadow-emerald-500/10">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 animate-pulse">
+                <PlayCircle className="w-4 h-4 fill-emerald-500 text-slate-950" />
+                Entrenamiento en curso
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                {activeSession.workoutDay.dayName}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-slate-100 text-sm">
+                {activeSession.workoutDay.title}
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Tienes una sesión activa sin finalizar. Puedes continuar registrando tus series.
+              </p>
+            </div>
+
+            <Link
+              href={`/entrenamiento/sesion/${activeSession.id}`}
+              className="w-full py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-2xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20"
+            >
+              <span>Continuar entrenamiento</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </section>
+        )}
+
         {/* SECCIÓN PRINCIPAL: ENTRENAMIENTO DE HOY (ACTIVO) */}
         {todayWorkout && (
           <section className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-3xl p-5 space-y-4 shadow-md">
@@ -173,6 +209,29 @@ export default async function DashboardPage() {
             </span>
           </div>
 
+          {/* Módulo: Mi historial de entrenamientos */}
+          <Link
+            href="/historial"
+            className="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex items-center justify-between transition-all group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                <History className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-100 text-sm group-hover:text-emerald-300 transition-colors">
+                  Mi historial de entrenamientos
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Consulta sesiones completadas, series y pesos levantados.
+                </p>
+              </div>
+            </div>
+            <span className="text-slate-500 group-hover:text-slate-300 transition-colors">
+              →
+            </span>
+          </Link>
+
           {/* Módulo: Mi plan semanal (7 días) */}
           <Link
             href="/semana"
@@ -196,22 +255,22 @@ export default async function DashboardPage() {
             </span>
           </Link>
 
-          {/* Módulo: Mi progreso corporal (Próximamente FC-6) */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-80">
+          {/* Módulo: Mi progreso corporal (Próximamente FC-7) */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-75">
             <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
               <TrendingUp className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold text-slate-100 text-sm">
-                  Mi progreso corporal
+                  Progreso corporal y medidas
                 </h4>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                  Próximamente (FC-6)
+                  Próximamente (FC-7)
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Seguimiento de peso ({unit}), medidas corporales y cargas.
+                Registro de peso ({unit}) y evolución física.
               </p>
             </div>
           </div>
