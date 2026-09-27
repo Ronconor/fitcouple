@@ -11,10 +11,11 @@ model User {
   id             String       @id @default(cuid())
   slug           String       @unique // "el" o "ella"
   name           String       // Identificador base ("Él" o "Ella")
-  passwordHash   String?      // Hash seguro bcrypt (null hasta aprovisionamiento)
+  passwordHash   String?      // Hash seguro bcrypt
   failedAttempts Int          @default(0)
   lockedUntil    DateTime?
   profile        UserProfile?
+  workoutPlan    WorkoutPlan?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -28,6 +29,70 @@ model UserProfile {
   generalGoal    String?  // Objetivo general sin datos médicos
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Exercise {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String   // Nombre del ejercicio en español
+  muscleGroup    String   // Grupo muscular principal
+  equipment      String   // Equipo necesario (Mancuernas, Peso corporal, etc.)
+  instructions   String   // Instrucciones paso a paso
+  commonMistakes String   // Errores comunes a evitar
+  alternative    String?  // Ejercicio alternativo sugerido
+  safetyWarning  String?  // Advertencia contextual (rodilla, respiración continua, etc.)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  workoutDayExercises WorkoutDayExercise[]
+}
+
+model WorkoutPlan {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String       // Nombre del plan
+  description String?
+  notes       String?      // Recordatorios generales (ej. respiración, articulaciones)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  days        WorkoutDay[]
+}
+
+model WorkoutDay {
+  id            String               @id @default(cuid())
+  planId        String
+  plan          WorkoutPlan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dayOfWeek     Int                  // 1 = Lunes, 2 = Martes, ..., 7 = Domingo
+  dayName       String               // "Lunes", "Martes", ..., "Domingo"
+  title         String               // Título de la sesión (ej. "Pecho, hombros y tríceps")
+  isRestDay     Boolean              @default(false)
+  focusNotes    String?              // Recomendaciones para el día
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  exercises     WorkoutDayExercise[]
+
+  @@unique([planId, dayOfWeek])
+}
+
+model WorkoutDayExercise {
+  id           String     @id @default(cuid())
+  workoutDayId String
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  exerciseId   String
+  exercise     Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  order        Int        // Orden del ejercicio en la sesión (1, 2, 3...)
+  targetSets   Int        // Series previstas
+  targetReps   String     // Repeticiones o duración ("10-12", "30-40 min")
+  restSeconds  Int        // Descanso orientativo en segundos
+  notes        String?    // Indicaciones breves específicas
+  alternative  String?    // Alternativa directa si se requiere
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([workoutDayId, order])
 }
 
 model SystemHealth {

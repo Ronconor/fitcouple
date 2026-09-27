@@ -12,7 +12,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio --port 5555",
     "setup:users": "tsx scripts/setup-credentials.ts",
-    "test:auth": "tsx tests/auth-isolation.test.ts"
+    "seed:workouts": "tsx prisma/seed-workouts.ts",
+    "test:auth": "tsx tests/auth-isolation.test.ts",
+    "test:workouts": "tsx tests/workouts.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -116,6 +116,26 @@ Comprueba:
 
 ---
 
+## 📋 Planes Semanales y Rutinas Personalizadas
+
+FitCouple cuenta con rutinas semanales (7 días) completamente adaptadas e independientes para cada uno, respetando de manera estricta las condiciones declaradas:
+- **Para Él:** Enfoque en recomposición, fuerza progresiva y cardio moderado con recordatorio constante de respiración continua (sin contener la respiración/Valsalva) debido a su hipertensión tratada.
+- **Para Ella:** Enfoque en glúteos, cadena posterior, tren superior y tonificación sin impacto. **Respeto absoluto a la rodilla derecha: sin carrera, sin saltos y sin sentadillas profundas** (solo rangos seguros como sentadilla a silla a 90°, hip thrust, puentes en suelo y peso muerto rumano).
+
+### Comandos de Gestión y Pruebas de Rutinas
+
+- **Actualizar o volver a sembrar el catálogo y planes:**
+  ```powershell
+  npm run seed:workouts
+  ```
+- **Auditar el cumplimiento de restricciones y aislamiento:**
+  ```powershell
+  npm run test:workouts
+  ```
+
+---
+
+
 
 
 ## 📦 Inventario de Equipamiento en Casa

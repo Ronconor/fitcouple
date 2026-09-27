@@ -18,6 +18,8 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/perfil") ||
+    pathname.startsWith("/entrenamiento") ||
+    pathname.startsWith("/semana") ||
     pathname.startsWith("/api/user");
 
   // Si intenta entrar a una ruta protegida sin estar autenticado -> redirigir a /login
@@ -39,6 +41,8 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/perfil/:path*",
+    "/entrenamiento/:path*",
+    "/semana/:path*",
     "/api/user/:path*",
     "/login",
   ],

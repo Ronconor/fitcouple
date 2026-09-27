@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { logoutAction } from "@/app/actions/auth";
+import { getUserDayWorkout, getCurrentDayOfWeek } from "@/lib/workouts";
 import {
   Dumbbell,
   TrendingUp,
@@ -9,8 +10,11 @@ import {
   LogOut,
   Sparkles,
   Settings,
-  Scale,
+  CalendarDays,
   Target,
+  ArrowRight,
+  Coffee,
+  CheckCircle2,
 } from "lucide-react";
 
 export const metadata = {
@@ -23,6 +27,10 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const currentDay = getCurrentDayOfWeek();
+  const workoutData = await getUserDayWorkout(user.id, currentDay);
+  const todayWorkout = workoutData?.day;
 
   const isHim = user.slug === "el";
   const displayName = user.profile?.displayName || user.name;
@@ -99,7 +107,7 @@ export default async function DashboardPage() {
               ¡Hola, {displayName}! 👋
             </h2>
             <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-              Tu rutina y registros están listos y protegidos en tu sesión.
+              Tu plan semanal personalizado está listo y adaptado a tus objetivos.
             </p>
           </div>
 
@@ -113,51 +121,97 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        {/* Acciones de Entrenamiento y Progreso */}
+        {/* SECCIÓN PRINCIPAL: ENTRENAMIENTO DE HOY (ACTIVO) */}
+        {todayWorkout && (
+          <section className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 rounded-3xl p-5 space-y-4 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                <Dumbbell className="w-4 h-4" />
+                Hoy: {todayWorkout.dayName}
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                {todayWorkout.isRestDay ? "Descanso" : "Rutina lista"}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-slate-100">
+                {todayWorkout.title}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                {todayWorkout.isRestDay
+                  ? "Día de recuperación muscular y descanso."
+                  : `${todayWorkout.exercises.length} ejercicios con mancuernas y peso corporal.`}
+              </p>
+            </div>
+
+            <Link
+              href="/entrenamiento"
+              className="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2"
+            >
+              {todayWorkout.isRestDay ? (
+                <>
+                  <Coffee className="w-4 h-4" />
+                  <span>Ver detalles de descanso</span>
+                </>
+              ) : (
+                <>
+                  <Dumbbell className="w-4 h-4" />
+                  <span>Ver mi entrenamiento de hoy</span>
+                </>
+              )}
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          </section>
+        )}
+
+        {/* Acciones y Módulos */}
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Tus Módulos
             </span>
-            <span className="text-[11px] text-slate-500">Fases FC-5 y FC-6</span>
           </div>
 
-          {/* Módulo: Mi entrenamiento de hoy */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-90">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
-              <Dumbbell className="w-6 h-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-100 text-sm">
-                  Mi entrenamiento de hoy
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Próximamente
-                </span>
+          {/* Módulo: Mi plan semanal (7 días) */}
+          <Link
+            href="/semana"
+            className="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex items-center justify-between transition-all group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/20">
+                <CalendarDays className="w-6 h-6" />
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Rutina personalizada, descanso y registro de series.
-              </p>
+              <div>
+                <h4 className="font-semibold text-slate-100 text-sm group-hover:text-cyan-300 transition-colors">
+                  Mi plan semanal completo
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Consulta la distribución de Lunes a Domingo.
+                </p>
+              </div>
             </div>
-          </div>
+            <span className="text-slate-500 group-hover:text-slate-300 transition-colors">
+              →
+            </span>
+          </Link>
 
-          {/* Módulo: Mi progreso corporal */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-90">
+          {/* Módulo: Mi progreso corporal (Próximamente FC-6) */}
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-80">
             <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
               <TrendingUp className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-100 text-sm">
+                <h4 className="font-semibold text-slate-100 text-sm">
                   Mi progreso corporal
-                </h3>
+                </h4>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                  Próximamente
+                  Próximamente (FC-6)
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Seguimiento de peso ({unit}), medidas y fuerza.
+                Seguimiento de peso ({unit}), medidas corporales y cargas.
               </p>
             </div>
           </div>
@@ -168,13 +222,13 @@ export default async function DashboardPage() {
             className="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex items-center justify-between transition-all group"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/20">
+              <div className="w-12 h-12 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center shrink-0 border border-slate-700">
                 <UserIcon className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-100 text-sm group-hover:text-cyan-300 transition-colors">
+                <h4 className="font-semibold text-slate-100 text-sm group-hover:text-slate-200 transition-colors">
                   Ajustar mi perfil
-                </h3>
+                </h4>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Cambiar nombre visible y preferencia de unidades.
                 </p>

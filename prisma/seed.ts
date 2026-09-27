@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { seedWorkouts } from "./seed-workouts";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,7 @@ async function main() {
     create: { id: 1, status: "healthy", checkedAt: new Date() },
   });
 
-  // Ensure initial profile placeholders
+  // Ensure initial user placeholders if they don't exist
   await prisma.user.upsert({
     where: { slug: "el" },
     update: {},
@@ -29,7 +30,10 @@ async function main() {
     },
   });
 
-  console.log("Database initialized with default profiles and health status.");
+  // Ensure catalog and personalized workout plans
+  await seedWorkouts();
+
+  console.log("Database initialized with default profiles, health status, and weekly workout plans.");
 }
 
 main()
