@@ -16,7 +16,8 @@
     "test:auth": "tsx tests/auth-isolation.test.ts",
     "test:workouts": "tsx tests/workouts.test.ts",
     "test:sessions": "tsx tests/sessions.test.ts",
-    "test": "tsx tests/auth-isolation.test.ts && tsx tests/workouts.test.ts && tsx tests/sessions.test.ts"
+    "test:measurements": "tsx tests/measurements.test.ts",
+    "test": "tsx tests/auth-isolation.test.ts && tsx tests/workouts.test.ts && tsx tests/sessions.test.ts && tsx tests/measurements.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

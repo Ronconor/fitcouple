@@ -17,6 +17,7 @@ model User {
   profile        UserProfile?
   workoutPlan    WorkoutPlan?
   workoutSessions WorkoutSession[]
+  bodyMeasurements BodyMeasurement[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -136,9 +137,28 @@ model WorkoutSet {
   @@index([workoutDayExerciseId])
 }
 
+model BodyMeasurement {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  measuredAt DateTime @default(now())
+  weightKg   Float?   // Almacenado siempre en kg
+  waistCm    Float?   // Cintura en cm
+  hipCm      Float?   // Cadera en cm
+  chestCm    Float?   // Pecho en cm
+  armCm      Float?   // Brazo en cm
+  thighCm    Float?   // Muslo en cm
+  notes      String?  // Nota opcional
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, measuredAt])
+}
+
 model SystemHealth {
   id        Int      @id @default(1)
   status    String   @default("healthy")
   checkedAt DateTime @default(now())
 }
+
 

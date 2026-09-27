@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   History,
   PlayCircle,
+  Scale,
 } from "lucide-react";
 
 export const metadata = {
@@ -255,25 +256,28 @@ export default async function DashboardPage() {
             </span>
           </Link>
 
-          {/* Módulo: Mi progreso corporal (Próximamente FC-7) */}
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex items-center gap-3.5 opacity-75">
-            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-slate-100 text-sm">
-                  Progreso corporal y medidas
-                </h4>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                  Próximamente (FC-7)
-                </span>
+          {/* Módulo: Mi progreso corporal */}
+          <Link
+            href="/progreso"
+            className="bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-4 flex items-center justify-between transition-all group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
+                <Scale className="w-6 h-6" />
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Registro de peso ({unit}) y evolución física.
-              </p>
+              <div>
+                <h4 className="font-semibold text-slate-100 text-sm group-hover:text-indigo-300 transition-colors">
+                  Mi progreso corporal
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Registro de peso ({unit}), cintura y medidas con gráficos.
+                </p>
+              </div>
             </div>
-          </div>
+            <span className="text-slate-500 group-hover:text-slate-300 transition-colors">
+              →
+            </span>
+          </Link>
 
           {/* Módulo: Configuración del Perfil */}
           <Link

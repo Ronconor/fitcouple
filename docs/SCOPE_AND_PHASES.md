@@ -68,6 +68,10 @@ FC-6 [Visualización Progreso] ➔ FC-7 [Hardening & Lanzamiento MVP]
 - **FC-6 — Registro de Entrenamientos e Historial (COMPLETADA):**  
   Sesión activa de entrenamiento ("Empezar entrenamiento"), registro ágil de series, repeticiones y cargas (kg/lb con conversión limpia), temporizador de descanso, finalización de sesión con notas e historial individual expandible con aislamiento total.
 
-- **FC-7 — Módulo de Progreso Corporal y Métricas (SIGUIENTE FASE):**  
-  Registro periódico de peso y medidas corporales, con gráficas simples de evolución para cada usuario.
+- **FC-7 — Módulo de Progreso Corporal y Métricas (COMPLETADA):**  
+  Registro periódico de peso y medidas corporales (cintura, cadera, pecho, brazo, muslo), gráficos cronológicos reales (sin interpolaciones artificiales), resumen neutro de cambios e historial ordenado con aislamiento total.
+
+- **FC-8 — Pulido Final, Hardening & Despliegue Local (SIGUIENTE FASE):**  
+  Revisión final de seguridad, auditoría de respaldos locales de PostgreSQL y verificación de acceso en red local para uso cotidiano de la pareja.
+
 
