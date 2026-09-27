@@ -90,6 +90,33 @@ npm run dev
 
 ---
 
+## 🔐 Gestión de Acceso y Credenciales Seguras
+
+FitCouple cuenta con autenticación individual para dos usuarios (`el` y `ella`), con sesiones independientes protegidas por cookies `HttpOnly`, tokens Web Crypto firmados y contraseñas con salting seguro mediante `bcrypt` (12 rondas).
+
+### Asignación de Contraseñas Privadas (Local e Interactivo)
+
+Para establecer o cambiar las contraseñas sin exponerlas en logs, chats ni archivos de código:
+```powershell
+npm run setup:users
+```
+*Este comando solicita la contraseña de forma interactiva con entrada oculta (los caracteres no se imprimen en pantalla).*
+
+### Verificación de Seguridad y Aislamiento
+
+Para ejecutar la suite de pruebas automatizadas de seguridad:
+```powershell
+npm run test:auth
+```
+Comprueba:
+- Criptografía de contraseñas y salting.
+- Rechazo de contraseñas incorrectas.
+- Aislamiento estricto (modificar datos de un usuario no altera los del otro).
+- Bloqueo temporal por fuerza bruta tras 5 intentos fallidos.
+
+---
+
+
 
 ## 📦 Inventario de Equipamiento en Casa
 

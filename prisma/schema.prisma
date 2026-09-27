@@ -8,11 +8,26 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  slug      String   @unique // "el" o "ella"
-  name      String   // "Él" o "Ella"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String       @id @default(cuid())
+  slug           String       @unique // "el" o "ella"
+  name           String       // Identificador base ("Él" o "Ella")
+  passwordHash   String?      // Hash seguro bcrypt (null hasta aprovisionamiento)
+  failedAttempts Int          @default(0)
+  lockedUntil    DateTime?
+  profile        UserProfile?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model UserProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName    String   // Nombre visible editable por el usuario
+  unitPreference String   @default("kg") // "kg" | "lb"
+  generalGoal    String?  // Objetivo general sin datos médicos
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model SystemHealth {
