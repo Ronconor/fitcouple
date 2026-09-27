@@ -1,0 +1,25 @@
+name: fitcouple
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fitcouple_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fitcouple_dev_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-fitcouple_db}
+    ports:
+      # Bound strictly to loopback (127.0.0.1) for local isolation and security
+      - "127.0.0.1:${POSTGRES_PORT:-5438}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fitcouple_user} -d ${POSTGRES_DB:-fitcouple_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    name: fitcouple_postgres_data

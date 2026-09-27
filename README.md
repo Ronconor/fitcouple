@@ -28,8 +28,41 @@ Las restricciones y condiciones registradas en la aplicación corresponden a inf
 
 - **Frontend:** Next.js (App Router, React, TypeScript), Tailwind CSS, PWA (Progressive Web App).
 - **Backend:** Next.js Server Actions y Route Handlers con validación mediante Zod.
-- **Base de Datos & ORM:** PostgreSQL 16 alojado en contenedor Docker aislado (`fitcouple-db`) gestionado a través de Prisma ORM.
-- **Aislamiento:** Red Docker exclusiva (`fitcouple_network`) y volumen persistente independiente (`fitcouple_pgdata`).
+- **Base de Datos & ORM:** PostgreSQL 16 Alpine en contenedor Docker aislado (`fitcouple-db-1`) en el puerto local `127.0.0.1:5438`, gestionado con Prisma ORM.
+- **Aislamiento:** Red Docker exclusiva (`fitcouple_default`) y volumen persistente independiente (`fitcouple_postgres_data`), enlazado estrictamente al localhost.
+
+---
+
+## 🐘 Gestión de la Base de Datos Local (Docker Compose)
+
+La infraestructura local de datos está configurada para operar de manera independiente y segura, sin interferir con otros servicios de la máquina.
+
+### Comandos de Operación Habitual
+
+- **Iniciar la base de datos:**
+  ```powershell
+  docker compose up -d
+  ```
+- **Consultar estado y salud del contenedor:**
+  ```powershell
+  docker compose ps
+  ```
+- **Detener la base de datos (preservando todos los datos):**
+  ```powershell
+  docker compose stop
+  ```
+- **Reanudar la base de datos:**
+  ```powershell
+  docker compose start
+  ```
+- **Reiniciar el servicio:**
+  ```powershell
+  docker compose restart
+  ```
+- **Consultar registros en tiempo real:**
+  ```powershell
+  docker compose logs -f db
+  ```
 
 ---
 
@@ -49,3 +82,4 @@ Las restricciones y condiciones registradas en la aplicación corresponden a inf
 
 - **Repositorio Oficial:** `https://github.com/Ronconor/fitcouple.git`
 - **Rama Principal:** `main`
+
