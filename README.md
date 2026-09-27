@@ -66,6 +66,31 @@ La infraestructura local de datos está configurada para operar de manera indepe
 
 ---
 
+## 💻 Ejecución y Acceso a la Aplicación
+
+Para utilizar la aplicación en desarrollo local desde el computador o desde el teléfono móvil conectado a la red local de casa:
+
+### 1. Iniciar la infraestructura de datos
+```powershell
+docker compose up -d
+```
+
+### 2. Iniciar el servidor Next.js
+```powershell
+npm run dev
+```
+
+### 3. Abrir FitCouple
+- **Desde este computador:** Abrir en el navegador [http://localhost:3005](http://localhost:3005).
+- **Desde el celular (en la misma red Wi-Fi):** Abrir en el navegador móvil la dirección local indicada por la consola (ej. `http://192.168.1.43:3005`).
+
+### 4. Detener la aplicación
+- **Servidor web:** Presionar `Ctrl + C` en la terminal donde se ejecuta `npm run dev`.
+- **Base de datos:** Ejecutar `docker compose stop` para pausar el contenedor preservando todos los registros de forma segura.
+
+---
+
+
 ## 📦 Inventario de Equipamiento en Casa
 
 - **Kit de mancuernas ajustables (20 kg nominales):**
