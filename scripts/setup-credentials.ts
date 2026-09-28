@@ -4,33 +4,72 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-function promptHidden(query: string): Promise<string> {
+/**
+ * Captura interactiva segura en consola para Windows y POSIX:
+ * - Enmascara cada carácter con '*'
+ * - Maneja correctamente Backspace (elimina de memoria y de pantalla)
+ * - Ignora secuencias de escape y teclas de control
+ * - Trata la contraseña como cadena literal exacta (SIN .trim())
+ */
+function promptMasked(query: string): Promise<string> {
   return new Promise((resolve) => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    const stdin = process.stdin;
     process.stdout.write(query);
 
-    // Mute stdout while typing to avoid echoing password to screen/logs
-    let muted = true;
-    const oldWrite = process.stdout.write;
-    process.stdout.write = (chunk: any, encoding?: any, cb?: any) => {
-      if (!muted) {
-        return oldWrite.call(process.stdout, chunk, encoding, cb);
+    if (!process.stdin.isTTY) {
+      // Fallback para entornos no interactivos o pipes
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      rl.question("", (answer) => {
+        rl.close();
+        // Cadena literal sin trim arbitrario
+        resolve(answer.replace(/[\r\n]+$/, ""));
+      });
+      return;
+    }
+
+    let password = "";
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.setEncoding("utf8");
+
+    const onData = (chunk: string) => {
+      for (const char of chunk) {
+        if (char === "\u0003") {
+          // Ctrl+C: salir limpiamente restaurando el modo de la terminal
+          cleanup();
+          process.stdout.write("\n\nOperación cancelada por el usuario.\n");
+          process.exit(0);
+        } else if (char === "\r" || char === "\n") {
+          // Enter: fin de entrada
+          cleanup();
+          process.stdout.write("\n");
+          // Devolver cadena literal exacta (sin eliminar espacios con .trim())
+          resolve(password);
+          return;
+        } else if (char === "\u0008" || char === "\x7f") {
+          // Backspace / Delete
+          if (password.length > 0) {
+            password = password.slice(0, -1);
+            process.stdout.write("\b \b");
+          }
+        } else if (char.charCodeAt(0) >= 32 && char.charCodeAt(0) <= 126) {
+          // Caracteres imprimibles (ASCII 32 a 126)
+          password += char;
+          process.stdout.write("*");
+        }
+        // Cualquier otro código de control (flechas, escape) se descarta deliberadamente
       }
-      return true;
     };
 
-    rl.question("", (answer) => {
-      muted = false;
-      process.stdout.write = oldWrite;
-      process.stdout.write("\n");
-      rl.close();
-      resolve(answer.trim());
-    });
+    const cleanup = () => {
+      process.stdin.removeListener("data", onData);
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+    };
+
+    process.stdin.on("data", onData);
   });
 }
 
@@ -51,13 +90,13 @@ async function configureUser(slug: string, defaultName: string, defaultGoal: str
   let confirm = "";
 
   while (true) {
-    password = await promptHidden(`Ingrese la contraseña para ${defaultName}: `);
+    password = await promptMasked(`Ingrese la contraseña para ${defaultName}: `);
     if (!password || password.length < 6) {
-      console.log("La contraseña debe tener al menos 6 caracteres. Intente nuevamente.");
+      console.log("La contraseña debe tener al menos 6 caracteres. Intente nuevamente.\n");
       continue;
     }
 
-    confirm = await promptHidden(`Confirme la contraseña para ${defaultName}: `);
+    confirm = await promptMasked(`Confirme la contraseña para ${defaultName}: `);
     if (password !== confirm) {
       console.log("Las contraseñas no coinciden. Intente nuevamente.\n");
       continue;
@@ -83,7 +122,7 @@ async function configureUser(slug: string, defaultName: string, defaultGoal: str
             generalGoal: defaultGoal,
           },
           update: {
-            // Keep existing values if profile exists
+            // Preservar valores existentes del perfil si ya existen
           },
         },
       },
@@ -97,7 +136,7 @@ async function configureUser(slug: string, defaultName: string, defaultGoal: str
 async function main() {
   console.log("=================================================");
   console.log("       FitCouple — Asignación de Credenciales     ");
-  console.log("  (Entrada oculta: los caracteres no se imprimen) ");
+  console.log("    (Entrada enmascarada: se muestra como '*')   ");
   console.log("=================================================");
 
   try {

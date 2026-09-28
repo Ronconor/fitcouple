@@ -14,59 +14,121 @@ import { displayToKg, kgToDisplay, formatWeight } from "../src/lib/units";
 const prisma = new PrismaClient();
 
 async function runSessionTests() {
-  console.log("=== INICIANDO PRUEBAS DE SESIONES Y REGISTRO DE ENTRENAMIENTOS (FC-6) ===");
+  console.log("=== INICIANDO PRUEBAS DE SESIONES Y REGISTRO DE ENTRENAMIENTOS (FC-6 / FC-6.2) ===");
+
+  const SYNTH_USER_1 = "test-session-synthetic-1";
+  const SYNTH_USER_2 = "test-session-synthetic-2";
 
   try {
-    // 1. Obtener usuarios Él y Ella
-    const him = await prisma.user.findUnique({
-      where: { slug: "el" },
-      include: {
-        workoutPlan: {
-          include: {
-            days: {
-              include: {
-                exercises: true,
-              },
-            },
-          },
-        },
-      },
+    // -------------------------------------------------------------
+    // 1. Verificación en MODO SOLO LECTURA de usuarios reales y catálogo
+    // -------------------------------------------------------------
+    const realUsers = await prisma.user.findMany({
+      where: { slug: { in: ["el", "ella"] } },
+      select: { id: true, slug: true },
     });
+    console.assert(realUsers.length === 2, "Usuarios reales 'el' y 'ella' deben existir.");
+    console.log("✔ Verificación 1: Verificación de usuarios reales en MODO SOLO LECTURA.");
 
-    const her = await prisma.user.findUnique({
-      where: { slug: "ella" },
-      include: {
-        workoutPlan: {
-          include: {
-            days: {
-              include: {
-                exercises: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!him || !her || !him.workoutPlan || !her.workoutPlan) {
-      throw new Error("Usuarios o planes no encontrados. Asegúrate de ejecutar los seeds primero.");
+    // Obtener un ejercicio real del catálogo para usarlo en la prueba
+    const sampleExercise = await prisma.exercise.findFirst();
+    if (!sampleExercise) {
+      throw new Error("No hay ejercicios en el catálogo. Asegúrate de ejecutar los seeds primero.");
     }
 
-    const himDay = him.workoutPlan.days.find((d) => !d.isRestDay)!;
-    const herDay = her.workoutPlan.days.find((d) => !d.isRestDay)!;
-    const himExercise = himDay.exercises[0];
-    const herExercise = herDay.exercises[0];
+    // Limpieza preventiva de usuarios sintéticos
+    await prisma.user.deleteMany({
+      where: { slug: { in: [SYNTH_USER_1, SYNTH_USER_2] } },
+    });
 
-    // Limpieza preventiva de sesiones de prueba previas
-    await prisma.workoutSession.deleteMany({
-      where: {
-        userId: { in: [him.id, her.id] },
-        notes: { contains: "[TEST-FC6]" },
+    // Crear dos usuarios sintéticos con planes y días de prueba
+    const user1 = await prisma.user.create({
+      data: {
+        slug: SYNTH_USER_1,
+        name: "Usuario Sesión 1",
+        profile: { create: { displayName: "Sintético 1", unitPreference: "kg" } },
+        workoutPlan: {
+          create: {
+            name: "Plan Sintético 1",
+            days: {
+              create: {
+                dayOfWeek: 1,
+                dayName: "Lunes",
+                title: "Sesión Prueba 1",
+                exercises: {
+                  create: {
+                    exerciseId: sampleExercise.id,
+                    order: 1,
+                    targetSets: 3,
+                    targetReps: "10-12",
+                    restSeconds: 60,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      include: {
+        workoutPlan: {
+          include: {
+            days: {
+              include: {
+                exercises: true,
+              },
+            },
+          },
+        },
       },
     });
 
+    const user2 = await prisma.user.create({
+      data: {
+        slug: SYNTH_USER_2,
+        name: "Usuario Sesión 2",
+        profile: { create: { displayName: "Sintético 2", unitPreference: "kg" } },
+        workoutPlan: {
+          create: {
+            name: "Plan Sintético 2",
+            days: {
+              create: {
+                dayOfWeek: 1,
+                dayName: "Lunes",
+                title: "Sesión Prueba 2",
+                exercises: {
+                  create: {
+                    exerciseId: sampleExercise.id,
+                    order: 1,
+                    targetSets: 3,
+                    targetReps: "10-12",
+                    restSeconds: 60,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      include: {
+        workoutPlan: {
+          include: {
+            days: {
+              include: {
+                exercises: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const dayUser1 = user1.workoutPlan!.days[0];
+    const dayUser2 = user2.workoutPlan!.days[0];
+    const exerciseUser1 = dayUser1.exercises[0];
+    const exerciseUser2 = dayUser2.exercises[0];
+
     // -------------------------------------------------------------
-    // PRUEBA 1: Conversión de unidades (kg <-> lb)
+    // PRUEBA 2: Conversión de unidades (kg <-> lb)
     // -------------------------------------------------------------
     const weightInKg = 10.0;
     const convertedToLb = kgToDisplay(weightInKg, "lb"); // ~22.0 lb
@@ -84,15 +146,15 @@ async function runSessionTests() {
     if (formattedKg !== "15 kg" || !formattedLb.includes("lb")) {
       throw new Error(`Formato de peso incorrecto: ${formattedKg}, ${formattedLb}`);
     }
-    console.log("✔ Verificación 1: Lógica de conversión de unidades (kg <-> lb) validada.");
+    console.log("✔ Verificación 2: Lógica de conversión de unidades (kg <-> lb) validada.");
 
     // -------------------------------------------------------------
-    // PRUEBA 2: Aislamiento al iniciar sesión (no se puede iniciar día ajeno)
+    // PRUEBA 3: Aislamiento al iniciar sesión (no se puede iniciar día ajeno)
     // -------------------------------------------------------------
     let unauthorizedFailed = false;
     try {
-      // Él intenta iniciar una sesión con el día de Ella
-      await createOrGetActiveSession(him.id, herDay.id);
+      // Usuario 1 intenta iniciar una sesión con el día de Usuario 2
+      await createOrGetActiveSession(user1.id, dayUser2.id);
     } catch {
       unauthorizedFailed = true;
     }
@@ -100,32 +162,32 @@ async function runSessionTests() {
     if (!unauthorizedFailed) {
       throw new Error("Fallo de seguridad: Un usuario pudo iniciar un día que no pertenece a su plan.");
     }
-    console.log("✔ Verificación 2: Protección de inicio de sesión: usuarios no pueden usar días ajenos.");
+    console.log("✔ Verificación 3: Protección de inicio de sesión: usuarios no pueden usar días ajenos.");
 
     // -------------------------------------------------------------
-    // PRUEBA 3: Creación de sesión e idempotencia (no duplicados)
+    // PRUEBA 4: Creación de sesión e idempotencia (no duplicados)
     // -------------------------------------------------------------
-    const sessionHim1 = await createOrGetActiveSession(him.id, himDay.id);
-    if (!sessionHim1 || sessionHim1.status !== "IN_PROGRESS") {
-      throw new Error("No se pudo crear la sesión en progreso para Él.");
+    const session1 = await createOrGetActiveSession(user1.id, dayUser1.id);
+    if (!session1 || session1.status !== "IN_PROGRESS") {
+      throw new Error("No se pudo crear la sesión en progreso.");
     }
 
-    const sessionHim2 = await createOrGetActiveSession(him.id, himDay.id);
-    if (sessionHim1.id !== sessionHim2.id) {
+    const session1Dup = await createOrGetActiveSession(user1.id, dayUser1.id);
+    if (session1.id !== session1Dup.id) {
       throw new Error("La función createOrGetActiveSession duplicó la sesión en lugar de retornar la activa.");
     }
 
-    const activeHim = await getActiveWorkoutSession(him.id, himDay.id);
-    if (!activeHim || activeHim.id !== sessionHim1.id) {
+    const activeUser1 = await getActiveWorkoutSession(user1.id, dayUser1.id);
+    if (!activeUser1 || activeUser1.id !== session1.id) {
       throw new Error("getActiveWorkoutSession no encontró la sesión activa.");
     }
-    console.log("✔ Verificación 3: Creación de sesión e idempotencia ante clics repetidos validada.");
+    console.log("✔ Verificación 4: Creación de sesión e idempotencia ante clics repetidos validada.");
 
     // -------------------------------------------------------------
-    // PRUEBA 4: Registro y eliminación de series
+    // PRUEBA 5: Registro y eliminación de series
     // -------------------------------------------------------------
-    const set1 = await recordWorkoutSet(him.id, sessionHim1.id, {
-      workoutDayExerciseId: himExercise.id,
+    const set1 = await recordWorkoutSet(user1.id, session1.id, {
+      workoutDayExerciseId: exerciseUser1.id,
       setNumber: 1,
       repsCompleted: 12,
       weightKg: 14.0,
@@ -135,18 +197,18 @@ async function runSessionTests() {
       throw new Error("No se registró correctamente la serie 1.");
     }
 
-    const set2 = await recordWorkoutSet(him.id, sessionHim1.id, {
-      workoutDayExerciseId: himExercise.id,
+    const set2 = await recordWorkoutSet(user1.id, session1.id, {
+      workoutDayExerciseId: exerciseUser1.id,
       setNumber: 2,
       repsCompleted: 10,
       weightKg: 16.0,
     });
 
-    // Validar que Ella no puede registrar series en la sesión de Él
+    // Validar que Usuario 2 no puede registrar series en la sesión de Usuario 1
     let crossRecordFailed = false;
     try {
-      await recordWorkoutSet(her.id, sessionHim1.id, {
-        workoutDayExerciseId: himExercise.id,
+      await recordWorkoutSet(user2.id, session1.id, {
+        workoutDayExerciseId: exerciseUser1.id,
         setNumber: 3,
         repsCompleted: 10,
         weightKg: 10.0,
@@ -162,8 +224,8 @@ async function runSessionTests() {
     // Validar que no se puede registrar un ejercicio que no pertenece al día
     let wrongExerciseFailed = false;
     try {
-      await recordWorkoutSet(him.id, sessionHim1.id, {
-        workoutDayExerciseId: herExercise.id,
+      await recordWorkoutSet(user1.id, session1.id, {
+        workoutDayExerciseId: exerciseUser2.id,
         setNumber: 3,
         repsCompleted: 10,
         weightKg: 10.0,
@@ -177,31 +239,31 @@ async function runSessionTests() {
     }
 
     // Eliminar serie 2 (para probar removeWorkoutSet)
-    await removeWorkoutSet(him.id, sessionHim1.id, set2.id);
-    const sessionAfterDelete = await getWorkoutSession(sessionHim1.id, him.id);
+    await removeWorkoutSet(user1.id, session1.id, set2.id);
+    const sessionAfterDelete = await getWorkoutSession(session1.id, user1.id);
     if (!sessionAfterDelete || sessionAfterDelete.sets.length !== 1) {
       throw new Error("La serie no fue eliminada correctamente de la sesión.");
     }
-    console.log("✔ Verificación 4: Registro, validación de pertenencia y eliminación de series operativo.");
+    console.log("✔ Verificación 5: Registro, validación de pertenencia y eliminación de series operativo.");
 
     // -------------------------------------------------------------
-    // PRUEBA 5: Finalización de sesión con notas
+    // PRUEBA 6: Finalización de sesión con notas
     // -------------------------------------------------------------
-    const completedHim = await completeWorkoutSession(
-      him.id,
-      sessionHim1.id,
-      "[TEST-FC6] Excelente entrenamiento de prueba"
+    const completedSession1 = await completeWorkoutSession(
+      user1.id,
+      session1.id,
+      "[TEST-SYNTH] Excelente entrenamiento de prueba sintética"
     );
 
-    if (completedHim.status !== "COMPLETED" || !completedHim.completedAt) {
+    if (completedSession1.status !== "COMPLETED" || !completedSession1.completedAt) {
       throw new Error("La sesión no se marcó como COMPLETED.");
     }
 
     // No se debe poder agregar series a una sesión ya finalizada
     let recordAfterCompleteFailed = false;
     try {
-      await recordWorkoutSet(him.id, sessionHim1.id, {
-        workoutDayExerciseId: himExercise.id,
+      await recordWorkoutSet(user1.id, session1.id, {
+        workoutDayExerciseId: exerciseUser1.id,
         setNumber: 2,
         repsCompleted: 10,
       });
@@ -212,73 +274,68 @@ async function runSessionTests() {
     if (!recordAfterCompleteFailed) {
       throw new Error("Se permitió registrar una serie en una sesión ya finalizada.");
     }
-    console.log("✔ Verificación 5: Finalización de sesión, sellado y notas verificado.");
+    console.log("✔ Verificación 6: Finalización de sesión, sellado y notas verificado.");
 
     // -------------------------------------------------------------
-    // PRUEBA 6: Cancelación de sesión
+    // PRUEBA 7: Cancelación de sesión
     // -------------------------------------------------------------
-    const sessionHer = await createOrGetActiveSession(her.id, herDay.id);
-    await recordWorkoutSet(her.id, sessionHer.id, {
-      workoutDayExerciseId: herExercise.id,
+    const session2 = await createOrGetActiveSession(user2.id, dayUser2.id);
+    await recordWorkoutSet(user2.id, session2.id, {
+      workoutDayExerciseId: exerciseUser2.id,
       setNumber: 1,
       repsCompleted: 15,
       weightKg: 5.0,
     });
 
-    const cancelledHer = await cancelWorkoutSession(her.id, sessionHer.id);
-    if (cancelledHer.status !== "CANCELLED") {
-      throw new Error("No se pudo cancelar la sesión de Ella.");
+    const cancelledSession2 = await cancelWorkoutSession(user2.id, session2.id);
+    if (cancelledSession2.status !== "CANCELLED") {
+      throw new Error("No se pudo cancelar la sesión.");
     }
 
-    const activeHerAfterCancel = await getActiveWorkoutSession(her.id);
-    if (activeHerAfterCancel) {
+    const activeUser2AfterCancel = await getActiveWorkoutSession(user2.id);
+    if (activeUser2AfterCancel) {
       throw new Error("Sesión cancelada sigue apareciendo como activa.");
     }
-    console.log("✔ Verificación 6: Cancelación y descarte de sesión validado.");
+    console.log("✔ Verificación 7: Cancelación y descarte de sesión validado.");
 
     // -------------------------------------------------------------
-    // PRUEBA 7: Aislamiento estricto del historial (getUserCompletedSessions)
+    // PRUEBA 8: Aislamiento estricto del historial (getUserCompletedSessions)
     // -------------------------------------------------------------
-    // Crear una sesión completada para Ella
-    const sessionHer2 = await createOrGetActiveSession(her.id, herDay.id);
-    await recordWorkoutSet(her.id, sessionHer2.id, {
-      workoutDayExerciseId: herExercise.id,
+    const session2Completed = await createOrGetActiveSession(user2.id, dayUser2.id);
+    await recordWorkoutSet(user2.id, session2Completed.id, {
+      workoutDayExerciseId: exerciseUser2.id,
       setNumber: 1,
       repsCompleted: 12,
       weightKg: 8.0,
     });
-    await completeWorkoutSession(her.id, sessionHer2.id, "[TEST-FC6] Sesión de Ella");
+    await completeWorkoutSession(user2.id, session2Completed.id, "[TEST-SYNTH] Sesión Usuario 2");
 
-    const himHistory = await getUserCompletedSessions(him.id);
-    const herHistory = await getUserCompletedSessions(her.id);
+    const user1History = await getUserCompletedSessions(user1.id);
+    const user2History = await getUserCompletedSessions(user2.id);
 
-    // Validar que en el historial de Él NO aparece la sesión de Ella
-    const himHasHerSession = himHistory.some((s) => s.id === sessionHer2.id);
-    if (himHasHerSession) {
-      throw new Error("Fallo crítico de privacidad: La sesión de Ella apareció en el historial de Él.");
+    const user1HasUser2Session = user1History.some((s) => s.id === session2Completed.id);
+    if (user1HasUser2Session) {
+      throw new Error("Fallo de aislamiento: Sesión de Usuario 2 apareció en historial de Usuario 1.");
     }
 
-    // Validar que en el historial de Ella NO aparece la sesión de Él
-    const herHasHimSession = herHistory.some((s) => s.id === sessionHim1.id);
-    if (herHasHimSession) {
-      throw new Error("Fallo crítico de privacidad: La sesión de Él apareció en el historial de Ella.");
+    const user2HasUser1Session = user2History.some((s) => s.id === session1.id);
+    if (user2HasUser1Session) {
+      throw new Error("Fallo de aislamiento: Sesión de Usuario 1 apareció en historial de Usuario 2.");
     }
-    console.log("✔ Verificación 7: Aislamiento absoluto del historial entre Él y Ella comprobado.");
-
-    // -------------------------------------------------------------
-    // LIMPIEZA FINAL DE DATOS DE PRUEBA
-    // -------------------------------------------------------------
-    await prisma.workoutSession.deleteMany({
-      where: {
-        id: { in: [sessionHim1.id, sessionHer.id, sessionHer2.id] },
-      },
-    });
-    console.log("✔ Verificación 8: Limpieza de registros de prueba completada. Base de datos impecable.");
+    console.log("✔ Verificación 8: Aislamiento absoluto del historial entre usuarios comprobado.");
 
     console.log("\n=================================================");
-    console.log("  TODAS LAS PRUEBAS DE FC-6 PASARON CON ÉXITO   ");
+    console.log("  TODAS LAS PRUEBAS DE SESIONES PASARON (PASS)  ");
+    console.log("   LOS USUARIOS REALES ('el', 'ella') NUNCA      ");
+    console.log("         FUERON MODIFICADOS NI USADOS            ");
     console.log("=================================================\n");
   } finally {
+    // -------------------------------------------------------------
+    // Cleanup 100% garantizado en FINALLY
+    // -------------------------------------------------------------
+    await prisma.user.deleteMany({
+      where: { slug: { in: [SYNTH_USER_1, SYNTH_USER_2] } },
+    });
     await prisma.$disconnect();
   }
 }
